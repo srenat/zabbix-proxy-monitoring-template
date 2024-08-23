@@ -1,0 +1,33 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+    - uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    - uuid: 870e739125964ea0ab0e21ee2d75a1fd
+      template: 'Zabbix Proxy Monitoring'
+      name: 'Zabbix Proxy Monitoring'
+      groups:
+        - name: Templates
+      discovery_rules:
+        - uuid: 8c8d1326b849471baf2049dbac381d8a
+          name: 'Proxy Discovery'
+          type: INTERNAL
+          key: 'zabbix[proxy,discovery]'
+          delay: 1h
+          item_prototypes:
+            - uuid: 5243c1a0784948988f80db1123c0ac8d
+              name: 'Proxy {#PROXYNAME} lastaccesstime'
+              type: INTERNAL
+              key: 'zabbix[proxy,{#PROXYNAME},lastaccess]'
+              history: 1d
+              trigger_prototypes:
+                - uuid: 1632b561c6144f7fa3ad68b610c2762e
+                  expression: 'fuzzytime(/Zabbix Server Proxy Monitoring/zabbix[proxy,{#PROXYNAME},lastaccess],1m)=0'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: 'fuzzytime(/Zabbix Server Proxy Monitoring/zabbix[proxy,{#PROXYNAME},lastaccess],1m)=1'
+                  name: 'Proxy {#PROXYNAME}  not available'
+                  priority: DISASTER
+          lld_macro_paths:
+            - lld_macro: '{#PROXYNAME}'
+              path: $.name
